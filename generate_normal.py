@@ -1,6 +1,8 @@
 import numpy as np
 
-# standard normal
+# generate normal variable 
+
+# standard normal 
 def generate_normal1(n):
     n = int(n/2)
     u1  = np.random.uniform(0,1,size = n)
@@ -12,7 +14,7 @@ def generate_normal1(n):
     result = np.append(x1,x2)
     return result
 
-# normal
+# normal with mu and sigma
 def generate_normal2(n,mu,sigma):
     n = int(n/2)
     u1  = np.random.uniform(0,1,size = n)

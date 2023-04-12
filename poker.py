@@ -1,13 +1,13 @@
 import numpy as np
 from statistics import mode
 from copy import copy
-
+#
 # output deck[num,suit], len(deck) = 52 *2
 # deck = [2,0,3,0,4,0, ..., 13,0,14,0,2,1, ... 14,3]
 def generate_deck() -> list:
     # suit = [0,1,2,3] = ["C","D","H","S"]
     # num = [2,3,4,5,6,7,8,9,10,11,12,13,14]
-    deck = np.zeros(13*4*2)
+    deck = [""] * 52 * 2
     for j in range(4):
         for i in range(13):
             deck[i*2 + j*13*2] = i+2
@@ -31,7 +31,7 @@ def num_player_input() -> int:
 # Output: drawn card, [num, suit], len(drawn_card) = num_player*2 +5
 def shuffle(num_player:int, deck:list)->list:
     draw = np.random.choice(52, size=(num_player*2 +5),replace=False)
-    drawn_card = np.zeros((num_player*2 +5)*2)
+    drawn_card = [""] * (num_player * 2 + 5) *2
     for i in range(num_player*2 +5):
         drawn_card[i*2] = deck[draw[i]*2]
         drawn_card[i*2+1] = deck[draw[i]*2+1]
@@ -214,12 +214,13 @@ class Check_tie():
     # Output: the hands of highest scores
     # score: highest num of 5 consecutive numbers of same suit
     def tie_straightflush(self,num_winner, num, suit):
-        max_suit = mode(suit)
         scoreboard = []
         result_hands = []
         for i in range(num_winner):
+            max_suit = mode(suit)
             my_num = [num[i*2], num[i*2 +1]] + num[num_winner*2:]
             my_suit = [suit[i*2], suit[i*2+1]] + suit[num_winner*2:]
+            max_suit = mode(my_suit)
             indices = [i for i in range(7) if my_suit[i] == max_suit]
             # sort out the non-max_suit numbers, then examine straight
             temp_num = [my_num[indices[i]] for i in range(len(indices))]
@@ -227,17 +228,17 @@ class Check_tie():
             count = 1
             max_count = 1
             score = 0
-            temp = int(temp_num[0])
+            temp = temp_num[0]
             for i in range(len(temp_num)-1):
-                if temp == int(temp_num[i+1]) - 1:
+                if temp == temp_num[i+1] - 1:
                     count += 1
-                    temp = int(temp_num[i+1])
+                    temp = temp_num[i+1]
                     if count >= max_count:
                         max_count = count
                         if max_count > 4:
                             score = temp_num[i+1]
                 else:
-                    temp = int(temp_num[i+1])
+                    temp = temp_num[i+1]
                     count = 1  
             # Check A bottom straight
             if max_count < 5:
@@ -263,7 +264,7 @@ class Check_tie():
     def tie_fourcard(self,num,suit):
         result_hands = []
         # score: higher fourcard
-        temp = np.zeros(2)
+        temp = [""] * 2
         for i in range(2):
             my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
                     , num[-3], num[-2], num[-1]] 
@@ -284,7 +285,7 @@ class Check_tie():
     # score: triple * 15 + double
     def tie_fullhouse(self,num_winner,num,suit):
         result_hands = []
-        scoreboard = np.zeros(num_winner)
+        scoreboard = [""] * num_winner
         for i in range(num_winner):
             score = 0
             my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
@@ -375,7 +376,7 @@ class Check_tie():
     # score: triple*15^2 + highest num except triple*15 + next highest num
     def tie_triple(self,num_winner, num,suit):
         result_hands = []
-        scoreboard = np.zeros(num_winner)
+        scoreboard = [""] * num_winner
         for i in range(num_winner):
             score = 0
             my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
@@ -401,7 +402,7 @@ class Check_tie():
     # score: higher pair*15^2 + lower pair*15 + highest card except them
     def tie_twopair(self,num_winner, num,suit):
         result_hands = []
-        scoreboard = np.zeros(num_winner)
+        scoreboard = [""] * num_winner
         for i in range(num_winner):
             score = 0
             my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
@@ -430,7 +431,7 @@ class Check_tie():
     # score: pair*15^3 + highest*15^2 + next*15 + next
     def tie_onepair(self,num_winner, num,suit):
         result_hands = []
-        scoreboard = np.zeros(num_winner)
+        scoreboard = [""] * num_winner
         for i in range(num_winner):
             score = 0
             my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
@@ -455,7 +456,7 @@ class Check_tie():
     # score: highest*15^4 + next*15^3 + next*15^2 +next*15 + next
     def tie_high(self,num_winner, num,suit):
         result_hands = []
-        scoreboard = np.zeros(num_winner)
+        scoreboard = [""] * num_winner
         for i in range(num_winner):
             score = 0
             my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
@@ -531,12 +532,13 @@ def result_show(highest_score, hands,shared_hands):
     else:
         print("Winning combination : High Card")
 
+deck= generate_deck()
 # Plays a single game
 # Input: num_player(int), deck(list)
 # From result_show(), Prints the number of winners, winning combination, and their hands
 def game(num_player, deck):
     shuffled_card = shuffle(num_player,deck)
-    shared_card = shuffled_card[0:10].tolist()
+    shared_card = shuffled_card[0:10]
     scoreboard = []
     hands = []
     for i in range(num_player):
@@ -584,3 +586,245 @@ def game(num_player, deck):
 #                         ,3473184/133784560,224848/133784560,41584/133784560]
 # print(model_prob)
 # print(actual_possible_prob)
+
+
+
+# Build a class of checking a tie after a showdown
+class Check_tie_a():
+    # Input: highest_score(int): combination of possible winners (ex: 9 -> straight flush)
+    #        num_winner(int): number of possible winners
+    #        hands(list): hands of players, len(hands) = 4 * num_winner
+    #        shared_card(list): 5 cards on the board, len(shared_card) = 2*5 
+    # Output: the hand of the winners(list)
+    def evaluate(self, highest_score, num_winner, hands, shared_card):
+        num = hands[::2] + shared_card[::2]
+        suit = hands[1::2] + shared_card[1::2]
+        if highest_score == 9:
+            return self.tie_straightflush(num_winner, num,suit)
+        if highest_score == 8:
+            return self.tie_fourcard(num,suit)
+        if highest_score == 7:
+            return self.tie_fullhouse(num_winner, num,suit)
+        if highest_score == 6:
+            return self.tie_flush(num_winner, num,suit)
+        if highest_score == 5:
+            return self.tie_straight(num_winner, num,suit)
+        if highest_score == 4:
+            return self.tie_triple(num_winner, num,suit)
+        if highest_score == 3:
+            return self.tie_twopair(num_winner, num,suit)
+        if highest_score == 2:
+            return self.tie_onepair(num_winner, num,suit)
+        else:
+            return self.tie_high(num_winner, num,suit)
+        
+    # Input: num_winner(int): number of possible winners
+    #        num(list): number of players' hands + number of the board
+    #        suit(list): suit of players' hands + suit of the board
+    #        ## num and suit are in same order ##
+    # Output: the hands of highest scores
+    # score: highest num of 5 consecutive numbers of same suit
+    def tie_straightflush(self,num_winner, num, suit):
+        max_suit = mode(suit)
+        scoreboard = []
+        result_hands = []
+        for i in range(num_winner):
+            my_num = [num[i*2], num[i*2 +1]] + num[num_winner*2:]
+            my_suit = [suit[i*2], suit[i*2+1]] + suit[num_winner*2:]
+            indices = [i for i in range(7) if my_suit[i] == max_suit]
+            # sort out the non-max_suit numbers, then examine straight
+            temp_num = [my_num[indices[i]] for i in range(len(indices))]
+            temp_num.sort()
+            count = 1
+            max_count = 1
+            score = 0
+            temp = int(temp_num[0])
+            for i in range(len(temp_num)-1):
+                if temp == int(temp_num[i+1]) - 1:
+                    count += 1
+                    temp = int(temp_num[i+1])
+                    if count >= max_count:
+                        max_count = count
+                        if max_count > 4:
+                            score = temp_num[i+1]
+                else:
+                    temp = int(temp_num[i+1])
+                    count = 1  
+            # Check A bottom straight
+            if max_count < 5:
+                if temp_num[-1] == 14:
+                    if temp_num[0] == 2:
+                        if temp_num[1] == 3:
+                            if temp_num[2] == 4:
+                                if temp_num[3] == 5:
+                                    score = temp_num[3]
+            scoreboard.append(score)
+        indices = [i for i in range(len(scoreboard)) if scoreboard[i] == max(scoreboard)] 
+        return indices
+
+    # Assumes that inputs are already 4 cards
+    # There can only be 2 people with four cards
+    # Output: the hands of highest scores
+    # score: higher fourcard    
+    def tie_fourcard(self,num,suit):
+        # score: higher fourcard
+        temp = [""]*2
+        indices = []
+        for i in range(2):
+            my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
+                    , num[-3], num[-2], num[-1]] 
+            temp[i] = mode(my_num)
+        if temp[0] >= temp[1]:
+            indices.append(0)
+        if temp[1] >= temp[0]:
+            indices.append(1)
+        return indices
+    
+    # Output: the hands of highest scores
+    # score: triple * 15 + double
+    def tie_fullhouse(self,num_winner,num,suit):
+        scoreboard = [""] * num_winner
+        for i in range(num_winner):
+            score = 0
+            my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
+                    , num[-3], num[-2], num[-1]] 
+            # sort(), in case there are two triples / two two pairs
+            my_num.sort(reverse=True)
+            triple = mode(my_num)
+            score += triple*15
+            temp_num = my_num.copy()
+            temp_num.remove(triple)
+            temp_num.remove(triple)
+            doub = mode(temp_num)
+            score += doub
+            scoreboard[i] = score
+        indices = [i for i in range(len(scoreboard)) if scoreboard[i] == max(scoreboard)] 
+        return indices
+     
+    # Output: the hands of highest scores
+    # score: highest num of 5 or longer consecutive numbers
+    def tie_straight(self,num_winner, num,suit):
+        scoreboard = []
+        for i in range(num_winner):
+            my_num = [num[i*2], num[i*2 +1]] + num[num_winner*2:]
+            my_num_no_dup = list(dict.fromkeys(my_num))
+            my_num_no_dup.sort()
+            count = 1
+            max_count = 1
+            score = 0
+            temp = int(my_num_no_dup[0])
+            for i in range(len(my_num_no_dup)-1):
+                if temp == int(my_num_no_dup[i+1]) - 1:
+                    count += 1
+                    temp = int(my_num_no_dup[i+1])
+                    if count >= max_count:
+                        max_count = count
+                        if max_count > 4:
+                            score = my_num_no_dup[i+1]
+                else:
+                    temp = int(my_num_no_dup[i+1])
+                    count = 1  
+            # Check A bottom straight
+            if max_count < 5:
+                if my_num_no_dup[-1] == 14:
+                    if my_num_no_dup[0] == 2:
+                        if my_num_no_dup[1] == 3:
+                            if my_num_no_dup[2] == 4:
+                                if my_num_no_dup[3] == 5:
+                                    score = 5
+            scoreboard.append(score)
+        indices = [i for i in range(len(scoreboard)) if scoreboard[i] == max(scoreboard)] 
+        return indices     
+    
+    # Output: the hands of highest scores
+    # score: sum of 5 cards of same suit in desc order
+    def tie_flush(self,num_winner, num,suit):
+        scoreboard = []
+        for i in range(num_winner):
+            my_num = [num[i*2], num[i*2 +1]] + num[num_winner*2:]
+            my_suit = [suit[i*2], suit[i*2+1]] + suit[num_winner*2:]
+            max_suit = mode(my_suit)
+            indices = [i for i in range(7) if my_suit[i] == max_suit]
+            temp_num = [my_num[indices[i]] for i in range(len(indices))]
+            temp_num.sort(reverse=True)
+            score = 0
+            score = score + temp_num[0] + temp_num[1] +  temp_num[2]+ temp_num[3]+ temp_num[4]
+            scoreboard.append(score)
+        indices = [i for i in range(len(scoreboard)) if scoreboard[i] == max(scoreboard)] 
+        return indices  
+
+    # Output: the hands of highest scores
+    # score: triple*15^2 + highest num except triple*15 + next highest num
+    def tie_triple(self,num_winner, num,suit):
+        scoreboard = [""] * num_winner
+        for i in range(num_winner):
+            score = 0
+            my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
+                    , num[-3], num[-2], num[-1]] 
+            triple = mode(my_num)
+            score += triple*15**2
+            temp_num = my_num.copy()
+            temp_num.remove(triple)
+            temp_num.remove(triple)
+            temp_num.remove(triple)
+            temp_num.sort(reverse=True)
+            score = score + temp_num[0]*15 + temp_num[1]
+            scoreboard[i] = score
+        indices = [i for i in range(len(scoreboard)) if scoreboard[i] == max(scoreboard)] 
+        return indices  
+
+    # Output: the hands of highest scores
+    # score: higher pair*15^2 + lower pair*15 + highest card except them
+    def tie_twopair(self,num_winner, num,suit):
+        scoreboard = [""] * num_winner
+        for i in range(num_winner):
+            score = 0
+            my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
+                    , num[-3], num[-2], num[-1]] 
+            my_num.sort(reverse=True)
+            double = mode(my_num)
+            score += double*15**2
+            temp_num = my_num.copy()
+            temp_num.remove(double)
+            temp_num.remove(double)
+            double = mode(temp_num)
+            score += double*15
+            temp_num.remove(double)
+            temp_num.remove(double)
+            score += temp_num[0]
+            scoreboard[i] = score
+        indices = [i for i in range(len(scoreboard)) if scoreboard[i] == max(scoreboard)] 
+        return indices 
+
+    # Output: the hands of highest scores
+    # score: pair*15^3 + highest*15^2 + next*15 + next
+    def tie_onepair(self,num_winner, num,suit):
+        scoreboard = [""] * num_winner
+        for i in range(num_winner):
+            score = 0
+            my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
+                    , num[-3], num[-2], num[-1]] 
+            my_num.sort(reverse=True)
+            pair = mode(my_num)
+            score += pair*15**3
+            temp_num = my_num.copy()
+            temp_num.remove(pair)
+            temp_num.remove(pair)
+            score = score + temp_num[0]*15**2 + temp_num[1]*15 + temp_num[2]
+            scoreboard[i] = score
+        indices = [i for i in range(len(scoreboard)) if scoreboard[i] == max(scoreboard)] 
+        return indices  
+
+    # Output: the hands of highest scores
+    # score: highest*15^4 + next*15^3 + next*15^2 +next*15 + next
+    def tie_high(self,num_winner, num,suit):
+        scoreboard = [""] * num_winner
+        for i in range(num_winner):
+            score = 0
+            my_num = [num[i*2], num[i*2+1], num[-5], num[-4]
+                    , num[-3], num[-2], num[-1]] 
+            my_num.sort(reverse=True)
+            score = score + my_num[0]*15**4 + my_num[1]*15**3 + my_num[2]*15**2 + my_num[3]*15 + my_num[4]
+            scoreboard[i] = score
+        indices = [i for i in range(len(scoreboard)) if scoreboard[i] == max(scoreboard)] 
+        return indices
